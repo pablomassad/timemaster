@@ -1,0 +1,7 @@
+{
+  "name": "com.pp.timemaster",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "custom"
+}

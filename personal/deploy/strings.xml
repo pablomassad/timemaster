@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Terranostra</string>
+    <string name="title_activity_main">timeuser</string>
+    <string name="package_name">com.pp.timeuser</string>
+    <string name="custom_url_scheme">com.pp.timeuser</string>
+</resources>

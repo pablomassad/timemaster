@@ -1,0 +1,7 @@
+{
+  "name": "com.pp.timeuser",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "custom"
+}

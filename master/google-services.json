@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "578961223658",
+    "project_id": "pp-tn-6078f",
+    "storage_bucket": "pp-tn-6078f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:578961223658:android:f7e235c2d0e9dca77f0c93",
+        "android_client_info": {
+          "package_name": "com.pp.tn"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXO0qGu81RTm5eNAIGX3wrC8TdMIriAMM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
