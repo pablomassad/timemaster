@@ -24,14 +24,14 @@ export default {
 
 <style scoped>
 .time {
-    font-size: 15vw;
+    font-size: 10vw;
     color: white;
     font-weight: bold;
     text-shadow: 1px 1px 9px black;
 }
 
 .day {
-    font-size: 10vw;
+    font-size: 7vw;
     color: white;
     text-shadow: 1px 1px 9px black;
 }

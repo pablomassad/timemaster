@@ -41,29 +41,28 @@ const actions = {
         set.users(users)
         return users
     },
-    async checkIO (id) {
-        // Lee los logs del usuario id y cambia de estado el ultimo registro
-        const logs = await fb.getCollectionFlex(`${state.path}/timeLogs`, { field: 'uid', val: id })
-        const pl = {
-            activo: false,
-            uid: id
-        }
-        if (logs.length) {
-            pl.activo = !logs[logs.length - 1].activo
-        } else {
-            pl.activo = true
-        }
-        console.log('checkIO payload:', pl)
+    async getCurGuardias () {
+        const logsActivos = await fb.getCollectionFlex(`${state.path}/timeLogs`, { field: 'activo', val: true })
+    },
+    async checkIO (uid, action, type = 'online') {
         const fnd = state.users.find(x => x.id === pl.uid)
-        if (pl.activo) {
+        const pl = {
+            type, // offline - online - manual
+            action,
+            uid,
+            name: fnd.name,
+            datetime: new Date().getTime()
+        }
+        if (pl.action === 'checkin') {
             addGuardia(fnd)
             ui.actions.notify('Persona entrante: ' + fnd.name, 'success')
-        } else {
-            delGuardia(pl.uid)
-            ui.actions.notify('Persona saliente:' + fnd.name, 'error')
         }
-        const now = new Date().getTime().toString()
-        await fb.setDocument(`${state.path}/timeLogs`, pl, now)
+        if (pl.action === 'checkout') {
+            delGuardia(pl.uid)
+            ui.actions.notify('Persona saliente: ' + fnd.name, 'error')
+        }
+        console.log('checkIO payload:', pl)
+        await fb.setDocument(`${state.path}/timeLogs`, pl)
     }
 }
 

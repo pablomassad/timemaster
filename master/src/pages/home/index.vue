@@ -7,22 +7,22 @@
             <DigitalClock class="clockFrame" />
             <div class="personalFrame">
                 <div class="tipo">
-                    <div class="porteria" v-if="appStore.state.curGuardias !== null">
+                    <div class="porteria" v-if="appStore.state.users">
                         <div class="title"> PORTERIA </div>
-                        <div class="rowActiveUser" v-for="(uid) in Object.keys(appStore.state.curGuardias)" :key="uid">
-                            <div class="avatar">
-                                <img :src="appStore.state.curGuardias[uid].hiresUrl" class="imgAvatar" />
+                        <div class="grdUsers">
+                            <div v-for="(uid) in Object.keys(appStore.state.users)" :key="uid" class="avatar">
+                                <img :src="appStore.state.users[uid].hiresUrl" class="imgAvatar" @click="showCheckIO = true" />
+                                <div class="user">{{ appStore.state.users[uid].name }}</div>
                             </div>
-                            <div class="user">{{ appStore.state.curGuardias[uid].name }}</div>
                         </div>
                     </div>
-                    <div class="maestranza">
+                    <!--<div class="maestranza">
                         <div class="title">MAESTRANZA</div>
                         <div class="rowActiveUser">
                             <div class="avatar"></div>
                             <div class="user">GUSTAVO MENDEZ</div>
                         </div>
-                    </div>
+                    </div>-->
                 </div>
             </div>
             <div class="btnScan" @click="scanQR">
@@ -34,6 +34,22 @@
             <q-icon name="arrow_back" class="back" @click="cancelQR"></q-icon>
             <qrcode-stream @detect="onDecode"></qrcode-stream>
         </div>
+        <ConfirmDialog :prompt="showCheckIO" class="formDialog" bg-color="white">
+            <template #header>
+                <div class="title">
+                    Confirmar acción
+                </div>
+            </template>
+            <template #default>
+                <Btn3d text="Entrada" color="red" @change="onChangeButton" />
+            </template>
+            <template #footer>
+                <div class="btnContainer">
+                    <q-btn glossy color="primary" icon="check" class="footerBtns" @click="cancel">Cancelar</q-btn>
+                    <q-btn glossy color="primary" icon="check" class="footerBtns" @click="accept">Aceptar</q-btn>
+                </div>
+            </template>
+        </ConfirmDialog>
         <ConfirmDialog :prompt="showPersonal" class="formDialog" bg-color="white">
             <template #header>
                 <div class="dialogTitle">
@@ -57,9 +73,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, defineComponent, reactive } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import appStore from 'src/pages/appStore'
 import DigitalClock from './Clock.vue'
+import Btn3d from './Btn3d.vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
 import QrcodeVue from 'qrcode.vue'
 import ConfirmDialog from 'fwk-q-confirmdialog'
@@ -67,6 +84,8 @@ import { ui } from 'fwk-q-ui'
 
 const qrRef = ref()
 const QRValue = ref()
+const userAction = ref('checkin')
+const showCheckIO = ref(false)
 const showScanner = ref(false)
 const showPersonal = ref(false)
 const selUser = ref()
@@ -74,9 +93,9 @@ const pass = ref()
 const passOK = ref(false)
 
 onMounted(async () => {
-    console.log('onMounted:', appStore.state.curGuardias)
     await appStore.actions.initApp()
     await appStore.actions.getUsers()
+    await appStore.actions.getCurGuardias()
 })
 const selecteUserToRegister = () => {
     showPersonal.value = true
@@ -100,16 +119,25 @@ const scanQR = () => {
 const cancelQR = () => {
     showScanner.value = false
 }
+const cancel = () => {
+    showCheckIO.value = false
+}
 const onDecode = async (deco) => {
-    const obj = JSON.parse(deco[0].rawValue)
-    const now = new Date().getTime()
-    showScanner.value = false
-    console.log('obj scanned:', obj)
-    if ((now - obj.datetime) > 60000) {
-        console.log('Tiempo vencido de validacion QR')
-        ui.actions.notify('Por favor escanee nuevamente el codigo QR.', 'info')
-    } else {
-        appStore.actions.checkIO(obj.id)
+    try {
+        const obj = JSON.parse(deco[0].rawValue)
+        const now = new Date().getTime()
+        showScanner.value = false
+        console.log('obj scanned:', obj)
+        if ((now - obj.datetime) > 60000) {
+            console.log('Tiempo vencido de validacion QR')
+            ui.actions.notify('Por favor escanee nuevamente el codigo QR.', 'info')
+        } else {
+            // const logs = await fb.getCollectionFlex(`${state.path}/timeLogs`, { field: 'uid', val: obj.id })
+            showCheckIO.value = true
+            appStore.actions.checkIO(obj.id)
+        }
+    } catch (error) {
+        ui.actions.notify('Codigo Incorrecto!', 'error')
     }
 }
 
@@ -126,24 +154,28 @@ const onDecode = async (deco) => {
     z-index: 10;
 }
 
-.rowActiveUser {
+.grdUsers {
     display: grid;
-    grid-template-columns: 10vw 55vw;
+    grid-template-columns: 1fr 1fr 1fr;
     align-items: center;
     justify-items: center;
-    margin: 10px 0;
-    border-bottom: 1px solid gray;
+    text-align: center;
+    padding-top: 24px;
+}
+
+.avatar {
+    height: 40vw;
 }
 
 .imgAvatar {
-    box-shadow: 1px 1px 5px gray;
+    box-shadow: 0px 0px 22px #008404;
     border-radius: 5px;
-    width: 8vw;
-    height: 8vw;
+    width: 22vw;
+    height: 26vw;
 }
 
 .user {
-    font-size: 4vw;
+    font-size: 3vw;
 }
 
 .picQR {
@@ -158,16 +190,17 @@ const onDecode = async (deco) => {
 }
 
 .title {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: bold;
     text-shadow: 1px 1px 1px white;
     text-align: center;
+    padding-bottom: 10px;
 }
 
 .personalFrame {
     background: white;
-    margin: 20px;
-    padding: 20px;
+    margin: 16px;
+    padding: 20px 10px 0;
     border-radius: 10px;
     box-shadow: inset 1px 1px 5px gray;
 }
