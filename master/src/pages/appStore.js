@@ -9,14 +9,14 @@ fb.initFirebase(ENVIRONMENTS.firebase)
 const state = reactive({
     path: undefined,
     config: undefined,
-    users: undefined,
-    curGuardias: LocalStorage.getItem('TN_curGuardias') || {},
+    users: LocalStorage.getItem('TN_users'),
     curMaestranza: LocalStorage.getItem('TN_curMaestranza')
 })
 const set = {
     users (o) {
         console.log('store set.users:', o)
         state.users = o
+        LocalStorage.set('TN_users', o)
     },
     path (p) {
         console.log('store set path:', p)
@@ -39,14 +39,17 @@ const actions = {
         const coordinador = await fb.getCollectionFlex(`${state.path}/users`, { field: 'role', val: 'COORDINADOR' })
         const users = [...guardias, ...maestranza, ...coordinador]
         set.users(users)
-        await actions.activeUsers()
+        await actions.updateStatusUsers()
         return users
     },
-    async activeUsers () {
-        const logsActivos = await fb.getCollectionFlex(`${state.path}/timeLogs`, { field: 'activo', val: true })
+    async updateStatusUsers () {
+        const wrkUsers = await getWorkingUsers()
+        state.users.forEach(u => {
+            if (wrkUsers.find(x => x.uid === u.id)) { u.isWorking = true }
+        })
     },
     async checkIO (uid, action, type = 'online') {
-        const fnd = state.users.find(x => x.id === pl.uid)
+        const fnd = state.users.find(x => x.id === uid)
         const pl = {
             type, // offline - online - manual
             action,
@@ -54,16 +57,9 @@ const actions = {
             name: fnd.name,
             datetime: new Date().getTime()
         }
-        if (pl.action === 'checkin') {
-            addGuardia(fnd)
-            ui.actions.notify('Persona entrante: ' + fnd.name, 'success')
-        }
-        if (pl.action === 'checkout') {
-            delGuardia(pl.uid)
-            ui.actions.notify('Persona saliente: ' + fnd.name, 'error')
-        }
         console.log('checkIO payload:', pl)
         await fb.setDocument(`${state.path}/timeLogs`, pl)
+        actions.updateStatusUsers()
     }
 }
 
@@ -72,16 +68,14 @@ export default {
     state: readonly(state),
     actions
 }
-
-function addGuardia (o) {
-    console.log('addGuardia:', o)
-    state.curGuardias[o.id] = o
-    LocalStorage.set('TN_curGuardias', state.curGuardias)
-}
 function delGuardia (uid) {
     console.log('delGuardia:', uid)
     delete state.curGuardias[uid]
     LocalStorage.set('TN_curGuardias', state.curGuardias)
+}
+async function getWorkingUsers () {
+    const wrkUsers = await fb.getCollection(`${state.path}/workingUsers`)
+    return wrkUsers
 }
 //    async createLotesCol() {
 //    for (let index = 1; index <= 48; index++) {

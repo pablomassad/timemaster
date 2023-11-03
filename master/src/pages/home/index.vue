@@ -10,10 +10,11 @@
                     <div class="porteria" v-if="appStore.state.users">
                         <div class="title"> PORTERIA </div>
                         <div class="flexFrame">
-                            <div v-for="(uid) in Object.keys(appStore.state.users)" :key="uid" class="avatar">
-                                <img :src="appStore.state.users[uid].hiresUrl" class="imgAvatar" @click="showCheckIO = true" :style="{opacity: (appStore.state.users[uid].isWorking ? 1 : 0.5)}" />
-                                <div class="userStatus" :style="{'background': (!appStore.state.users[uid].isWorking) ? 'radial-gradient(farthest-corner at 0px 0px, #faa 0%, #f00 50%)' : 'radial-gradient(farthest-corner at 0px 0px, #afa 0%, #090 50%)'}"></div>
-                                <div class="user">{{ appStore.state.users[uid].name }}</div>
+                            <div v-for="(usr) in appStore.state.users" :key="usr" class="avatar">
+                                <!--@click="showCheckIO = true"-->
+                                <img :src="usr.hiresUrl" class="imgAvatar" :class="{working: (usr.isWorking === true)}" />
+                                <div class="userStatus" :style="{'background': (!usr.isWorking) ? 'radial-gradient(farthest-corner at 0px 0px, #faa 0%, #f00 50%)' : 'radial-gradient(farthest-corner at 0px 0px, #afa 0%, #090 50%)'}"></div>
+                                <div class="user">{{ usr.name }}</div>
                             </div>
                         </div>
                     </div>
@@ -62,6 +63,7 @@
                 <div v-if="passOK">
                     <q-select :options="appStore.state.users" behavior="menu" label="Seleccione usuario" v-model="selUser" option-label="name" option-value="id" @update:model-value="onSelUser"></q-select>
                     <qrcode-vue v-if="selUser" ref="qrRef" :value="QRValue" class="picQR" />
+                    <q-btn icon="download" @click="updateAPK"></q-btn>
                 </div>
             </template>
             <template #footer>
@@ -74,7 +76,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import appStore from 'src/pages/appStore'
 import DigitalClock from './Clock.vue'
 import Btn3d from './Btn3d.vue'
@@ -102,7 +104,7 @@ const selecteUserToRegister = () => {
 }
 const accept = () => {
     showPersonal.value = false
-    selUser.value.valuel = undefined
+    selUser.value = undefined
 }
 const onPassword = (e) => {
     passOK.value = (e === 'admin1604')
@@ -130,16 +132,24 @@ const onDecode = async (deco) => {
         console.log('obj scanned:', obj)
         if ((now - obj.datetime) > 60000) {
             console.log('Tiempo vencido de validacion QR')
-            ui.actions.notify('Por favor escanee nuevamente el codigo QR.', 'info')
+            ui.actions.notify('Por favor escanea nuevamente el codigo QR.', 'info')
         } else {
-            // const logs = await fb.getCollectionFlex(`${state.path}/timeLogs`, { field: 'uid', val: obj.id })
-            showCheckIO.value = true
-            appStore.actions.checkIO(obj.id)
+            // showCheckIO.value = true
+            const usr = appStore.state.users.find(x => x.id === obj.id)
+            const action = (usr.isWorking) ? 'checkout' : 'checkin'
+            appStore.actions.checkIO(usr.id, action)
         }
     } catch (error) {
         ui.actions.notify('Codigo Incorrecto!', 'error')
     }
 }
+const updateAPK = async () => {
+    window.open('https://drive.google.com/file/d/1Hrs9k-RnuoTCI11NivBG36X4ObK1vtgh/view?usp=drive_link', '_system')
+}
+
+watch(() => appStore.state.users, (newUsers) => {
+    console.log('watch users update:', newUsers)
+}, { deep: true })
 
 </script>
 
@@ -157,7 +167,7 @@ const onDecode = async (deco) => {
 .flexFrame {
     display: flex;
     flex-wrap: wrap;
-    gap: 30px;
+    gap: 20px;
     margin-top: 16px;
     justify-content: center;
 }
@@ -165,6 +175,11 @@ const onDecode = async (deco) => {
 .avatar {
     position: relative;
     height: 160px;
+}
+
+.working {
+    opacity: 1;
+    box-shadow: 0px 0px 20px black;
 }
 
 .userStatus {
@@ -178,7 +193,8 @@ const onDecode = async (deco) => {
 }
 
 .imgAvatar {
-    box-shadow: 0px 0px 10px gray;
+    opacity: 0.5;
+    box-shadow: none;
     border-radius: 5px;
     width: 90px;
     height: 110px;
@@ -211,8 +227,8 @@ const onDecode = async (deco) => {
 
 .personalFrame {
     background: white;
-    margin: 16px;
-    padding: 20px 10px 0;
+    margin: 8px;
+    padding: 0px 8px;
     border-radius: 10px;
     box-shadow: inset 1px 1px 5px gray;
 }
@@ -220,12 +236,12 @@ const onDecode = async (deco) => {
 .logoFrame {
     position: relative;
     width: 100%;
-    height: 35vw;
+    height: 30vw;
 }
 
 .logo {
     position: absolute;
-    top: 20%;
+    top: 10%;
     right: 0;
     left: 0;
     margin: auto;
@@ -237,8 +253,11 @@ const onDecode = async (deco) => {
 }
 
 .clockFrame {
-    display: grid;
+    justify-content: center;
+    display: flex;
+    gap: 30px;
     justify-items: center;
+
 }
 
 .btnScan {
