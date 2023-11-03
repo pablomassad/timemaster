@@ -39,9 +39,10 @@ const actions = {
         const coordinador = await fb.getCollectionFlex(`${state.path}/users`, { field: 'role', val: 'COORDINADOR' })
         const users = [...guardias, ...maestranza, ...coordinador]
         set.users(users)
+        await actions.activeUsers()
         return users
     },
-    async getCurGuardias () {
+    async activeUsers () {
         const logsActivos = await fb.getCollectionFlex(`${state.path}/timeLogs`, { field: 'activo', val: true })
     },
     async checkIO (uid, action, type = 'online') {

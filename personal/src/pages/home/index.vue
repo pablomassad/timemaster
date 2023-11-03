@@ -5,11 +5,6 @@
                 <img src="images/tn.png" class="logo">
             </div>
             <div class="estado username">Bienvenido {{ appStore.state.user.name }}</div>
-            <div class="rowEstado">
-                <div class="estado">Estado:</div>
-                <div class="statusText">ACTIVO</div>
-                <div class="statusLed" :class="{'activo': true}"></div>
-            </div>
             <div class="qrFrame">
                 <div class="dialogTitle subtitle">
                     Escaneá el código QR
@@ -61,7 +56,7 @@ watch(() => appStore.state.user, (newUser) => {
 .username {
     text-align: center;
     font-weight: bold;
-    font-size: 6vw;
+    font-size: 5vw;
 }
 
 .logoFrame {

@@ -12,7 +12,7 @@ export const ENVIRONMENTS = {
         projectId: 'pp-security-tracker',
         storageBucket: 'pp-security-tracker.appspot.com',
         messagingSenderId: '678840774599',
-        appId: '1:678840774599:web:68214f3f2065aa4c0733e2',
-        measurementId: 'G-VC7ZR0XNDH'
+        appId: '1:678840774599:web:cccee44e137603ac0733e2',
+        measurementId: 'G-68W6DM979K'
     }
 }

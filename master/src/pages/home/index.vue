@@ -9,9 +9,10 @@
                 <div class="tipo">
                     <div class="porteria" v-if="appStore.state.users">
                         <div class="title"> PORTERIA </div>
-                        <div class="grdUsers">
+                        <div class="flexFrame">
                             <div v-for="(uid) in Object.keys(appStore.state.users)" :key="uid" class="avatar">
-                                <img :src="appStore.state.users[uid].hiresUrl" class="imgAvatar" @click="showCheckIO = true" />
+                                <img :src="appStore.state.users[uid].hiresUrl" class="imgAvatar" @click="showCheckIO = true" :style="{opacity: (appStore.state.users[uid].isWorking ? 1 : 0.5)}" />
+                                <div class="userStatus" :style="{'background': (!appStore.state.users[uid].isWorking) ? 'radial-gradient(farthest-corner at 0px 0px, #faa 0%, #f00 50%)' : 'radial-gradient(farthest-corner at 0px 0px, #afa 0%, #090 50%)'}"></div>
                                 <div class="user">{{ appStore.state.users[uid].name }}</div>
                             </div>
                         </div>
@@ -95,7 +96,6 @@ const passOK = ref(false)
 onMounted(async () => {
     await appStore.actions.initApp()
     await appStore.actions.getUsers()
-    await appStore.actions.getCurGuardias()
 })
 const selecteUserToRegister = () => {
     showPersonal.value = true
@@ -154,28 +154,40 @@ const onDecode = async (deco) => {
     z-index: 10;
 }
 
-.grdUsers {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    align-items: center;
-    justify-items: center;
-    text-align: center;
-    padding-top: 24px;
+.flexFrame {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-top: 16px;
+    justify-content: center;
 }
 
 .avatar {
-    height: 40vw;
+    position: relative;
+    height: 160px;
+}
+
+.userStatus {
+    position: absolute;
+    top: -10px;
+    right: 0;
+    border-radius: 50%;
+    box-shadow: 1px 1px 4px;
+    width: 30px;
+    height: 30px;
 }
 
 .imgAvatar {
-    box-shadow: 0px 0px 22px #008404;
+    box-shadow: 0px 0px 10px gray;
     border-radius: 5px;
-    width: 22vw;
-    height: 26vw;
+    width: 90px;
+    height: 110px;
 }
 
 .user {
-    font-size: 3vw;
+    font-size: 11px;
+    width: 100px;
+    text-align: center;
 }
 
 .picQR {
