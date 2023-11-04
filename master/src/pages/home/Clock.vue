@@ -1,10 +1,10 @@
 <template>
     <div>
-        <div class="time">
-            {{ currentTime.toLocaleTimeString('en-GB') }}
-        </div>
         <div class="day">
             {{ currentTime.toLocaleDateString('es-ES') }}
+        </div>
+        <div class="time">
+            {{ currentTime.toLocaleTimeString('en-GB') }}
         </div>
     </div>
 </template>
@@ -24,14 +24,14 @@ export default {
 
 <style scoped>
 .time {
-    font-size: 8vw;
+    font-size: 7vw;
     color: white;
     font-weight: bold;
     text-shadow: 1px 1px 9px black;
 }
 
 .day {
-    font-size: 8vw;
+    font-size: 7vw;
     color: white;
     text-shadow: 1px 1px 9px black;
 }

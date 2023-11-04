@@ -1,14 +1,21 @@
 <template>
     <div class="backIntegralmente">
-        <div v-if="!showScanner">
+        <div v-if="!showScanner" class="timeFrame">
             <div class="logoFrame">
                 <img src="images/tn.png" class="logo" @click="selecteUserToRegister">
+                <div class="btnScan" @click="scanQR">
+                    <img src="images/scan.png" class="qr" />
+                </div>
+                <div class="day">
+                    {{ currentTime.toLocaleDateString('es-ES') }}
+                </div>
+                <div class="time">
+                    {{ currentTime.toLocaleTimeString('en-GB') }}
+                </div>
             </div>
-            <DigitalClock class="clockFrame" />
             <div class="personalFrame">
                 <div class="tipo">
                     <div class="porteria" v-if="appStore.state.users">
-                        <div class="title"> PORTERIA </div>
                         <div class="flexFrame">
                             <div v-for="(usr) in appStore.state.users" :key="usr" class="avatar">
                                 <!--@click="showCheckIO = true"-->
@@ -18,18 +25,7 @@
                             </div>
                         </div>
                     </div>
-                    <!--<div class="maestranza">
-                        <div class="title">MAESTRANZA</div>
-                        <div class="rowActiveUser">
-                            <div class="avatar"></div>
-                            <div class="user">GUSTAVO MENDEZ</div>
-                        </div>
-                    </div>-->
                 </div>
-            </div>
-            <div class="btnScan" @click="scanQR">
-                <img src="images/scan.png" class="qr" />
-                <div class="scanText">SCANEAR QR</div>
             </div>
         </div>
         <div v-if="showScanner">
@@ -77,8 +73,8 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import { useCurrentTime } from './useCurrentTime'
 import appStore from 'src/pages/appStore'
-import DigitalClock from './Clock.vue'
 import Btn3d from './Btn3d.vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
 import QrcodeVue from 'qrcode.vue'
@@ -87,6 +83,7 @@ import { ui } from 'fwk-q-ui'
 
 const qrRef = ref()
 const QRValue = ref()
+const { currentTime } = useCurrentTime()
 const userAction = ref('checkin')
 const showCheckIO = ref(false)
 const showScanner = ref(false)
@@ -164,45 +161,59 @@ watch(() => appStore.state.users, (newUsers) => {
     z-index: 10;
 }
 
+.time {
+    font-size: 7vw;
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 9px black;
+}
+
+.day {
+    font-size: 7vw;
+    color: white;
+    text-shadow: 1px 1px 9px black;
+}
+
 .flexFrame {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
-    margin-top: 16px;
+    gap: 8px;
+    margin-top: 4px;
     justify-content: center;
 }
 
 .avatar {
     position: relative;
-    height: 160px;
+    height: 144px;
 }
 
 .working {
-    opacity: 1;
-    box-shadow: 0px 0px 20px black;
+    opacity: 1 !important;
+    box-shadow: 0px 0px 20px black !important;
 }
 
 .userStatus {
     position: absolute;
     top: -10px;
-    right: 0;
+    right: 5px;
     border-radius: 50%;
     box-shadow: 1px 1px 4px;
-    width: 30px;
-    height: 30px;
+    width: 20px;
+    height: 20px;
 }
 
 .imgAvatar {
-    opacity: 0.5;
+    opacity: 0.3;
     box-shadow: none;
     border-radius: 5px;
-    width: 90px;
-    height: 110px;
+    width: 80px;
+    height: 100px;
+    border: 2px solid;
 }
 
 .user {
     font-size: 11px;
-    width: 100px;
+    width: 90px;
     text-align: center;
 }
 
@@ -226,38 +237,35 @@ watch(() => appStore.state.users, (newUsers) => {
 }
 
 .personalFrame {
-    background: white;
+    background: #e9e9e9;
     margin: 8px;
-    padding: 0px 8px;
+    padding-top: 16px;
     border-radius: 10px;
     box-shadow: inset 1px 1px 5px gray;
 }
 
 .logoFrame {
+    display: grid;
     position: relative;
+    grid-template-columns: 1fr 1fr;
+    justify-items: center;
     width: 100%;
-    height: 30vw;
+    height: 140px;
 }
 
 .logo {
-    position: absolute;
-    top: 10%;
-    right: 0;
-    left: 0;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    /* top: 10%; */
+    /* right: 0; */
+    /* left: 0; */
     margin: auto;
-    width: 50vw;
+    width: 28vw;
     padding: 2vw;
     max-width: 500px;
     box-shadow: 5px 5px 20px #7b7b7b;
     border-radius: 20px;
-}
-
-.clockFrame {
-    justify-content: center;
-    display: flex;
-    gap: 30px;
-    justify-items: center;
-
 }
 
 .btnScan {
@@ -266,18 +274,18 @@ watch(() => appStore.state.users, (newUsers) => {
     background: #e6eaeb;
     justify-content: center;
     margin: auto;
-    width: 30vw;
-    height: 30vw;
-    border-radius: 40px;
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
     color: gray;
-    padding: 20px;
+    padding: 10px;
     border: 2px solid gray;
     box-shadow: 5px 5px 20px black;
 }
 
 .btnScan:active {
     box-shadow: none;
-    padding: 22px
+    padding: 12px
 }
 
 .scanText {
