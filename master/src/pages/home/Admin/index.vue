@@ -3,7 +3,7 @@
         <ConfirmDialog :prompt="showAdmin" noPersistant @onClose="onClose" bg-color="white">
             <template #header>
                 <div class="dialogTitle">
-                    Seleccion de Usuario
+                    Seleccion de Usuario (v{{ appStore.state.config.version_timemaster }})
                 </div>
             </template>
             <template #default>
@@ -38,7 +38,6 @@ const passOK = ref(false)
 const showAdmin = ref(false)
 
 onMounted(async () => {
-
 })
 const show = () => {
     showAdmin.value = true
@@ -66,6 +65,7 @@ defineExpose({ show })
 <style scoped lang="scss">
 .dialogTitle {
     font-size: 24px;
+    text-align: center;
 }
 
 .picQR {

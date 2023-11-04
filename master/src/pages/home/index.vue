@@ -17,8 +17,9 @@
                 <div class="tipo">
                     <div class="porteria" v-if="appStore.state.users">
                         <div class="flexFrame">
+                            <!--@click="checkAction(usr)"-->
                             <div v-for="(usr) in appStore.state.users" :key="usr" class="avatar">
-                                <img :src="usr.hiresUrl" @click="checkAction(usr)" class="imgAvatar" :class="{working: (usr.isWorking === true)}" />
+                                <img :src="usr.hiresUrl" class="imgAvatar" :class="{working: (usr.isWorking === true)}" />
                                 <div class="userStatus" :style="{'background': (!usr.isWorking) ? 'radial-gradient(farthest-corner at 0px 0px, #faa 0%, #f00 50%)' : 'radial-gradient(farthest-corner at 0px 0px, #afa 0%, #090 50%)'}"></div>
                                 <div class="user">{{ usr.name }}</div>
                             </div>
@@ -76,7 +77,10 @@ const onDecode = async (deco) => {
             console.log('Tiempo vencido de validacion QR')
             ui.actions.notify('Por favor escanea nuevamente el codigo QR.', 'info')
         } else {
-            refCheckIO.value.show(userInfo.id)
+            // refCheckIO.value.show(userInfo.id)
+            const usr = appStore.state.users.find(x => x.id === userInfo.id)
+            const action = (usr.isWorking) ? 'checkout' : 'checkin'
+            appStore.actions.checkIO(usr.id, action)
         }
     } catch (error) {
         ui.actions.notify('Codigo Incorrecto!', 'error')

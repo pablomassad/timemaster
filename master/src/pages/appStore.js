@@ -3,6 +3,7 @@ import { ui } from 'fwk-q-ui'
 import fb from 'fwk-q-firebase'
 import { LocalStorage } from 'quasar'
 import { ENVIRONMENTS } from 'src/environments'
+import moment from 'moment'
 
 fb.initFirebase(ENVIRONMENTS.firebase)
 
@@ -29,8 +30,8 @@ const set = {
 }
 const actions = {
     async initApp () {
-        const setting = await fb.getDocument('settings', ENVIRONMENTS.lugar)
-        set.config(setting)
+        const cfg = await fb.getDocument('settings', ENVIRONMENTS.lugar)
+        set.config(cfg)
         set.path(`settings/${ENVIRONMENTS.lugar}`)
     },
     async getUsers () {
@@ -50,16 +51,20 @@ const actions = {
     },
     async checkIO (uid, action, type = 'online') {
         const fnd = state.users.find(x => x.id === uid)
+        const now = new Date().getTime()
         const pl = {
             type, // offline - online - manual
             action,
             uid,
             name: fnd.name,
-            datetime: new Date().getTime()
+            datetime: now,
+            dtMobile: moment(now).format('DD/MM  HH:mm:ss')
         }
         console.log('checkIO payload:', pl)
-        await fb.setDocument(`${state.path}/timeLogs`, pl)
-        actions.updateStatusUsers()
+        await fb.setDocument(`${state.path}/timeLogs`, pl, now.toString())
+        setTimeout(() => {
+            actions.updateStatusUsers()
+        }, 10000)
     }
 }
 
