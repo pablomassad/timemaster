@@ -2,7 +2,7 @@
     <div class="backIntegralmente">
         <div v-if="!showScanner" class="timeFrame">
             <div class="logoFrame">
-                <img src="images/tn.png" class="logo" @click="selecteUserToRegister">
+                <img src="images/tn.png" class="logo" @click="adminUsers">
                 <div class="btnScan" @click="scanQR">
                     <img src="images/scan.png" class="qr" />
                 </div>
@@ -18,8 +18,7 @@
                     <div class="porteria" v-if="appStore.state.users">
                         <div class="flexFrame">
                             <div v-for="(usr) in appStore.state.users" :key="usr" class="avatar">
-                                <!--@click="showCheckIO = true"-->
-                                <img :src="usr.hiresUrl" class="imgAvatar" :class="{working: (usr.isWorking === true)}" />
+                                <img :src="usr.hiresUrl" @click="checkAction(usr)" class="imgAvatar" :class="{working: (usr.isWorking === true)}" />
                                 <div class="userStatus" :style="{'background': (!usr.isWorking) ? 'radial-gradient(farthest-corner at 0px 0px, #faa 0%, #f00 50%)' : 'radial-gradient(farthest-corner at 0px 0px, #afa 0%, #090 50%)'}"></div>
                                 <div class="user">{{ usr.name }}</div>
                             </div>
@@ -32,42 +31,9 @@
             <q-icon name="arrow_back" class="back" @click="cancelQR"></q-icon>
             <qrcode-stream @detect="onDecode"></qrcode-stream>
         </div>
-        <ConfirmDialog :prompt="showCheckIO" class="formDialog" bg-color="white">
-            <template #header>
-                <div class="title">
-                    Confirmar acción
-                </div>
-            </template>
-            <template #default>
-                <Btn3d text="Entrada" color="red" @change="onChangeButton" />
-            </template>
-            <template #footer>
-                <div class="btnContainer">
-                    <q-btn glossy color="primary" icon="check" class="footerBtns" @click="cancel">Cancelar</q-btn>
-                    <q-btn glossy color="primary" icon="check" class="footerBtns" @click="accept">Aceptar</q-btn>
-                </div>
-            </template>
-        </ConfirmDialog>
-        <ConfirmDialog :prompt="showPersonal" class="formDialog" bg-color="white">
-            <template #header>
-                <div class="dialogTitle">
-                    Seleccion de Usuario
-                </div>
-            </template>
-            <template #default>
-                <q-input v-if="!passOK" v-model="pass" type="password" label="Ingrese contraseña" @change="onPassword"></q-input>
-                <div v-if="passOK">
-                    <q-select :options="appStore.state.users" behavior="menu" label="Seleccione usuario" v-model="selUser" option-label="name" option-value="id" @update:model-value="onSelUser"></q-select>
-                    <qrcode-vue v-if="selUser" ref="qrRef" :value="QRValue" class="picQR" />
-                    <q-btn icon="download" @click="updateAPK"></q-btn>
-                </div>
-            </template>
-            <template #footer>
-                <div class="btnContainer">
-                    <q-btn glossy color="primary" icon="check" class="footerBtns" @click="accept">Aceptar</q-btn>
-                </div>
-            </template>
-        </ConfirmDialog>
+
+        <CheckIO ref="refCheckIO" />
+        <Admin ref="refAdmin" />
     </div>
 </template>
 
@@ -75,42 +41,24 @@
 import { ref, onMounted, watch } from 'vue'
 import { useCurrentTime } from './useCurrentTime'
 import appStore from 'src/pages/appStore'
-import Btn3d from './Btn3d.vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
-import QrcodeVue from 'qrcode.vue'
-import ConfirmDialog from 'fwk-q-confirmdialog'
 import { ui } from 'fwk-q-ui'
+import Admin from './Admin/index.vue'
+import CheckIO from './CheckIO/index.vue'
 
-const qrRef = ref()
-const QRValue = ref()
+const refAdmin = ref()
+const refCheckIO = ref()
+
 const { currentTime } = useCurrentTime()
-const userAction = ref('checkin')
-const showCheckIO = ref(false)
 const showScanner = ref(false)
-const showPersonal = ref(false)
-const selUser = ref()
-const pass = ref()
-const passOK = ref(false)
+let userInfo
 
 onMounted(async () => {
     await appStore.actions.initApp()
     await appStore.actions.getUsers()
 })
-const selecteUserToRegister = () => {
-    showPersonal.value = true
-}
-const accept = () => {
-    showPersonal.value = false
-    selUser.value = undefined
-}
-const onPassword = (e) => {
-    passOK.value = (e === 'admin1604')
-    if (!passOK.value) { ui.actions.notify('Contraseña incorrecta!') }
-}
-const onSelUser = (e) => {
-    console.log(e.id)
-    selUser.value = e
-    QRValue.value = JSON.stringify({ id: e.id })
+const adminUsers = () => {
+    refAdmin.value.show()
 }
 const scanQR = () => {
     showScanner.value = true
@@ -118,30 +66,24 @@ const scanQR = () => {
 const cancelQR = () => {
     showScanner.value = false
 }
-const cancel = () => {
-    showCheckIO.value = false
-}
 const onDecode = async (deco) => {
     try {
-        const obj = JSON.parse(deco[0].rawValue)
-        const now = new Date().getTime()
         showScanner.value = false
-        console.log('obj scanned:', obj)
-        if ((now - obj.datetime) > 60000) {
+        userInfo = JSON.parse(deco[0].rawValue)
+        const now = new Date().getTime()
+        console.log('obj scanned:', userInfo)
+        if ((now - userInfo.datetime) > 60000) {
             console.log('Tiempo vencido de validacion QR')
             ui.actions.notify('Por favor escanea nuevamente el codigo QR.', 'info')
         } else {
-            // showCheckIO.value = true
-            const usr = appStore.state.users.find(x => x.id === obj.id)
-            const action = (usr.isWorking) ? 'checkout' : 'checkin'
-            appStore.actions.checkIO(usr.id, action)
+            refCheckIO.value.show(userInfo.id)
         }
     } catch (error) {
         ui.actions.notify('Codigo Incorrecto!', 'error')
     }
 }
-const updateAPK = async () => {
-    window.open('https://drive.google.com/file/d/1Hrs9k-RnuoTCI11NivBG36X4ObK1vtgh/view?usp=drive_link', '_system')
+const checkAction = (usr) => {
+    refCheckIO.value.show(usr.id)
 }
 
 watch(() => appStore.state.users, (newUsers) => {
@@ -150,7 +92,7 @@ watch(() => appStore.state.users, (newUsers) => {
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .back {
     font-size: 50px;
     color: white;
@@ -159,6 +101,12 @@ watch(() => appStore.state.users, (newUsers) => {
     top: 10px;
     left: 10px;
     z-index: 10;
+}
+
+.timeFrame {
+    padding-top: 16px;
+    max-width: 500px;
+    margin: auto;
 }
 
 .time {
@@ -217,17 +165,6 @@ watch(() => appStore.state.users, (newUsers) => {
     text-align: center;
 }
 
-.picQR {
-    width: 200px !important;
-    height: 200px !important;
-    margin: 20px;
-    justify-content: center;
-    display: grid;
-    justify-self: center;
-    margin: auto;
-    margin-top: 50px;
-}
-
 .title {
     font-size: 22px;
     font-weight: bold;
@@ -261,10 +198,10 @@ watch(() => appStore.state.users, (newUsers) => {
     /* right: 0; */
     /* left: 0; */
     margin: auto;
-    width: 28vw;
-    padding: 2vw;
+    width: 90px;
+    padding: 10px;
     max-width: 500px;
-    box-shadow: 5px 5px 20px #7b7b7b;
+    box-shadow: 0px 0px 20px #c2c2c2;
     border-radius: 20px;
 }
 
@@ -296,18 +233,28 @@ watch(() => appStore.state.users, (newUsers) => {
     width: 100%;
 }
 
+.actionFrame {
+    display: flex;
+    justify-content: center;
+}
+
 @media screen and(min-width:600px) {
     .logoFrame {
         height: 300px;
     }
 
     .logo {
-        top: 40px;
-        right: 0;
-        left: 0;
         margin: auto;
-        width: 310px;
-        padding: 15px;
+        width: 90px;
+        padding: 10px;
+    }
+
+    .day {
+        font-size: 40px;
+    }
+
+    .time {
+        font-size: 40px;
     }
 }
 </style>
