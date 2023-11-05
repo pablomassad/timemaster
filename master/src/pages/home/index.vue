@@ -2,7 +2,7 @@
     <div class="backIntegralmente">
         <div v-if="!showScanner" class="timeFrame">
             <div class="logoFrame">
-                <img src="images/tn.png" class="logo" @click="adminUsers">
+                <img src="images/tn.png" class="logo" :class="{masterClass: !!mastermode}" @click="adminUsers">
                 <div class="btnScan" @click="scanQR">
                     <img src="images/scan.png" class="qr" />
                 </div>
@@ -17,8 +17,7 @@
                 <div class="tipo">
                     <div class="porteria" v-if="appStore.state.users">
                         <div class="flexFrame">
-                            <!--@click="checkAction(usr)"-->
-                            <div v-for="(usr) in appStore.state.users" :key="usr" class="avatar">
+                            <div v-for="(usr) in appStore.state.users" :key="usr" class="avatar" @click="checkAction(usr)">
                                 <img :src="usr.hiresUrl" class="imgAvatar" :class="{working: (usr.isWorking)}" />
                                 <div class="userStatus" :style="{'background': (!usr.isWorking) ? 'radial-gradient(farthest-corner at 0px 0px, #faa 0%, #f00 50%)' : 'radial-gradient(farthest-corner at 0px 0px, #afa 0%, #090 50%)'}"></div>
                                 <div class="user">{{ usr.name }}</div>
@@ -35,6 +34,7 @@
 
         <CheckIO ref="refCheckIO" />
         <Admin ref="refAdmin" />
+        <div class="master" v-touch-hold.mouse="toggleMaster"></div>
     </div>
 </template>
 
@@ -49,7 +49,7 @@ import CheckIO from './CheckIO/index.vue'
 
 const refAdmin = ref()
 const refCheckIO = ref()
-
+const mastermode = ref(false)
 const { currentTime } = useCurrentTime()
 const showScanner = ref(false)
 let userInfo
@@ -67,6 +67,12 @@ const scanQR = () => {
 const cancelQR = () => {
     showScanner.value = false
 }
+const checkAction = (usr) => {
+    if (mastermode.value) {
+        console.log('mastermode checkIO:', usr.name)
+        refCheckIO.value.show(usr.id)
+    }
+}
 const onDecode = async (deco) => {
     try {
         showScanner.value = false
@@ -83,6 +89,10 @@ const onDecode = async (deco) => {
         ui.actions.notify('Codigo Incorrecto!', 'error')
     }
 }
+const toggleMaster = () => {
+    mastermode.value = !mastermode.value
+    console.log('mastermode:', mastermode.value.toString())
+}
 
 watch(() => appStore.state.users, (newUsers) => {
     console.log('watch users update:', newUsers)
@@ -91,6 +101,18 @@ watch(() => appStore.state.users, (newUsers) => {
 </script>
 
 <style scoped lang="scss">
+.master {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 40px;
+}
+
+.masterClass {
+    box-shadow: 0 0 10px yellow !important;
+}
+
 .back {
     font-size: 50px;
     color: white;

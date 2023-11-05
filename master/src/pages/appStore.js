@@ -44,28 +44,35 @@ const actions = {
         return users
     },
     async updateStatusUsers () {
-        const wrkUsers = await getWorkingUsers()
-        state.users.forEach(u => {
-            u.isWorking = (wrkUsers.find(x => x.uid === u.id))
+        const colRef = fb.getCollectionRef(`${state.path}/workingUsers`)
+        const unsubscribe = fb.onSnapshot(colRef, (querySnapshot) => {
+            const wrkUsers = []
+            querySnapshot.forEach((doc) => {
+                wrkUsers.push(doc.data())
+            })
+            state.users.forEach(u => {
+                u.isWorking = (wrkUsers.find(x => x.uid === u.id))
+            })
         })
     },
-    async checkIO (uid, action, comment, type = 'online') {
-        const fnd = state.users.find(x => x.id === uid)
+    async getUserHours (uid) {
+        const col = `${state.path}/timeLogs`
+        console.log('col:', col)
+        const result = await fb.getCollectionFlex(col, { field: 'uid', val: uid, sortField: 'datetime', sortDir: 'asc' })
+        return result
+    },
+    async checkIO (param) {
+        const fnd = state.users.find(x => x.id === param.uid)
         const now = new Date().getTime()
-        const pl = {
-            type, // offline - online - manual
-            action,
-            uid,
+        const payload = {
+            type: 'online', // offline - online - manual
             name: fnd.name,
-            datetime: now,
-            dtMobile: moment(now).format('DD/MM  HH:mm:ss')
+            datetime: now
         }
-        if (comment) pl.comment = comment
+        const pl = { ...payload, ...param }
+        pl.dtMobile = moment(pl.datetime).format('DD/MM  HH:mm:ss')
         console.log('checkIO payload:', pl)
         await fb.setDocument(`${state.path}/timeLogs`, pl, now.toString())
-        setTimeout(() => {
-            actions.updateStatusUsers()
-        }, 2000)
     }
 }
 

@@ -48,6 +48,7 @@ import appStore from 'src/pages/appStore'
 import Btn3d from './Btn3d.vue'
 import ModalPanel from './ModalPanel.vue'
 import moment from 'moment'
+import { parse, formatISO } from 'date-fns'
 
 console.log('Admin CONSTRUCTOR............')
 
@@ -133,8 +134,17 @@ const acceptCheckIO = () => {
         showConfirm.value = true
         onAcceptDialog.value = async () => {
             showConfirm.value = false
-            const action = (usr.value.isWorking) ? 'checkout' : 'checkin'
-            appStore.actions.checkIO(usr.value.id, action, comentario.value)
+            const acc = (usr.value.isWorking) ? 'checkout' : 'checkin'
+            const pl = {
+                uid: usr.value.id,
+                action: acc
+            }
+            if (isManual.value) {
+                const dt = parse(`${fechaManual.value} ${horaManual.value}`, 'dd-MM-yyyy HH:mm', new Date())
+                pl.datetime = dt.getTime() // formatISO(dt)
+                pl.comment = comentario.value
+            }
+            appStore.actions.checkIO(pl)
             showForm.value = false
         }
         onCancelDialog.value = () => {
