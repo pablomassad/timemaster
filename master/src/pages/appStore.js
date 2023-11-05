@@ -46,10 +46,10 @@ const actions = {
     async updateStatusUsers () {
         const wrkUsers = await getWorkingUsers()
         state.users.forEach(u => {
-            if (wrkUsers.find(x => x.uid === u.id)) { u.isWorking = true }
+            u.isWorking = (wrkUsers.find(x => x.uid === u.id))
         })
     },
-    async checkIO (uid, action, type = 'online') {
+    async checkIO (uid, action, comment, type = 'online') {
         const fnd = state.users.find(x => x.id === uid)
         const now = new Date().getTime()
         const pl = {
@@ -60,11 +60,12 @@ const actions = {
             datetime: now,
             dtMobile: moment(now).format('DD/MM  HH:mm:ss')
         }
+        if (comment) pl.comment = comment
         console.log('checkIO payload:', pl)
         await fb.setDocument(`${state.path}/timeLogs`, pl, now.toString())
         setTimeout(() => {
             actions.updateStatusUsers()
-        }, 10000)
+        }, 2000)
     }
 }
 

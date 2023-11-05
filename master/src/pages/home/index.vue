@@ -6,7 +6,7 @@
                 <div class="btnScan" @click="scanQR">
                     <img src="images/scan.png" class="qr" />
                 </div>
-                <div class="day">
+                <div class="time">
                     {{ currentTime.toLocaleDateString('es-ES') }}
                 </div>
                 <div class="time">
@@ -19,7 +19,7 @@
                         <div class="flexFrame">
                             <!--@click="checkAction(usr)"-->
                             <div v-for="(usr) in appStore.state.users" :key="usr" class="avatar">
-                                <img :src="usr.hiresUrl" class="imgAvatar" :class="{working: (usr.isWorking === true)}" />
+                                <img :src="usr.hiresUrl" class="imgAvatar" :class="{working: (usr.isWorking)}" />
                                 <div class="userStatus" :style="{'background': (!usr.isWorking) ? 'radial-gradient(farthest-corner at 0px 0px, #faa 0%, #f00 50%)' : 'radial-gradient(farthest-corner at 0px 0px, #afa 0%, #090 50%)'}"></div>
                                 <div class="user">{{ usr.name }}</div>
                             </div>
@@ -77,17 +77,11 @@ const onDecode = async (deco) => {
             console.log('Tiempo vencido de validacion QR')
             ui.actions.notify('Por favor escanea nuevamente el codigo QR.', 'info')
         } else {
-            // refCheckIO.value.show(userInfo.id)
-            const usr = appStore.state.users.find(x => x.id === userInfo.id)
-            const action = (usr.isWorking) ? 'checkout' : 'checkin'
-            appStore.actions.checkIO(usr.id, action)
+            refCheckIO.value.show(userInfo.id)
         }
     } catch (error) {
         ui.actions.notify('Codigo Incorrecto!', 'error')
     }
-}
-const checkAction = (usr) => {
-    refCheckIO.value.show(usr.id)
 }
 
 watch(() => appStore.state.users, (newUsers) => {
@@ -117,12 +111,6 @@ watch(() => appStore.state.users, (newUsers) => {
     font-size: 7vw;
     color: white;
     font-weight: bold;
-    text-shadow: 1px 1px 9px black;
-}
-
-.day {
-    font-size: 7vw;
-    color: white;
     text-shadow: 1px 1px 9px black;
 }
 
@@ -253,12 +241,9 @@ watch(() => appStore.state.users, (newUsers) => {
         padding: 10px;
     }
 
-    .day {
-        font-size: 40px;
-    }
-
     .time {
         font-size: 40px;
     }
+
 }
 </style>

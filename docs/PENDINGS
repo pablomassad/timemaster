@@ -1,10 +1,10 @@
 👍 Habilitacion de usuario por QR en MASTER
-        * acceso como administrador a listado de usuarios y emision de QR de registro
+👍        * acceso como administrador a listado de usuarios y emision de QR de registro
+👍 Crear cloud function de trigger insert timeLog para agregar el campo datetimeServer
 
-⏰ Agregar switch  de accion
+⏰ Agregar switch  de accion Btn3d
 ⏰ Agregar boton manual
 ⏰ Cambiar action si esta en modo online / offline o manual
-⏰ Crear cloud function de trigger insert timeLog para agregar el campo datetimeServer
 ⏰ Detectar modo online/offline
 ⏰ Implementar SAF
 
