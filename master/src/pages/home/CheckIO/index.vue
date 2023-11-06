@@ -140,8 +140,8 @@ const acceptCheckIO = () => {
                 action: acc
             }
             if (isManual.value) {
-                const dt = parse(`${fechaManual.value} ${horaManual.value}`, 'dd-MM-yyyy HH:mm', new Date())
-                pl.datetime = dt.getTime() // formatISO(dt)
+                const dt = moment(`${fechaManual.value} ${horaManual.value}`, 'HH-MM-YYYY HH:mm') // parse(`${fechaManual.value} ${horaManual.value}`, 'dd-MM-yyyy HH:mm', new Date())
+                pl.datetime = dt.unix() * 1000 // formatISO(dt)
                 pl.comment = comentario.value
             }
             appStore.actions.checkIO(pl)

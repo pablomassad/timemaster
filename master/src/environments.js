@@ -2,7 +2,7 @@ export const ENVIRONMENTS = {
     lugar: 'terranostra',
     url: 'https://drive.google.com/file/d/1Hrs9k-RnuoTCI11NivBG36X4ObK1vtgh/view?usp=drive_link',
     versionCode: 1,
-    versionName: '1.00.16',
+    versionName: '1.00.17',
     productName: 'TN',
     packageName: 'com.pp.timemaster',
     appName: 'timemaster',
