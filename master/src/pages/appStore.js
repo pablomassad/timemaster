@@ -11,7 +11,20 @@ const state = reactive({
     path: undefined,
     config: undefined,
     users: LocalStorage.getItem('TN_users'),
-    curMaestranza: LocalStorage.getItem('TN_curMaestranza')
+    months: [
+        { id: 1, name: 'enero' },
+        { id: 2, name: 'febrero' },
+        { id: 3, name: 'marzo' },
+        { id: 4, name: 'abril' },
+        { id: 5, name: 'mayo' },
+        { id: 6, name: 'junio' },
+        { id: 7, name: 'julio' },
+        { id: 8, name: 'agosto' },
+        { id: 9, name: 'setiembre' },
+        { id: 10, name: 'octubre' },
+        { id: 11, name: 'noviembre' },
+        { id: 12, name: 'diciembre' }
+    ]
 })
 const set = {
     users (o) {
@@ -59,6 +72,12 @@ const actions = {
         const col = `${state.path}/timeLogs`
         console.log('col:', col)
         const result = await fb.getCollectionFlex(col, { field: 'uid', val: uid, sortField: 'datetime', sortDir: 'asc' })
+        return result
+    },
+    async getHoursByMonth (month) {
+        const col = `${state.path}/timeLogs`
+        console.log('col:', col)
+        const result = await fb.getCollectionFlex(col, { field: 'action', val: 'checkin', sortField: 'datetime', sortDir: 'asc' })
         return result
     },
     async checkIO (param) {

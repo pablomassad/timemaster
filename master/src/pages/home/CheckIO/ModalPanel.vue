@@ -1,4 +1,3 @@
-<!-- eslint-disable -->
 <template @keypress.esc="close">
     <transition name="modal-animation">
         <div v-if="modalActive" class="modal" @click="close">
@@ -12,25 +11,18 @@
     </transition>
 </template>
 
-<script>
-export default {
-    name: 'ModalPanel',
-    props: ['modalActive'],
-    setup (props, { emit }) {
-        const close = () => {
-            console.log('close event')
-            emit('close')
-        }
-        const prevent = (e) => {
-            console.log('prevent:', e)
-        }
-        return {
-            close,
-            prevent
-        }
-    }
+<script setup>
+const props = defineProps(['modalActive'])
+const emit = defineEmits(['close'])
+
+const close = () => {
+    console.log('close event')
+    emit('close')
 }
-</script>
+const prevent = (e) => {
+    console.log('prevent:', e)
+}
+</script >
 
 <style lang="scss">
 .modal {
