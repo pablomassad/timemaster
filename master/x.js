@@ -162,7 +162,7 @@ function initAndroid () {
     console.log('Copiando => /deploy/google-services.json')
     fs.copyFileSync(
         path.join(__dirname, '/deploy/google-services.json'),
-        path.join(__dirname, '/android/app/src/google-services.json')
+        path.join(__dirname, '/android/app/google-services.json')
     )
 
     /// /////////////////////////////////////////////////////////////////////////////////
