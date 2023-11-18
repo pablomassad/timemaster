@@ -10,7 +10,8 @@
         "icons": "icongenie g -i ./public/images/tn.png  --skip-trim --theme-color ddddff",
         "preview": "vite preview --port 8080",
         "ionic:build": "quasar build",
-        "ionic:serve": "quasar dev"
+        "ionic:serve": "quasar dev",
+        "android": "quasar build --debug && npx cap sync && npx cap run android --target Pixel_6_Pro_API_32"
     },
     "dependencies": {
         "@capacitor-community/barcode-scanner": "4.0.1",

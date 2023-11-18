@@ -7,8 +7,8 @@
 ⏰ Cambiar action si esta en modo online / offline o manual
 ⏰ Detectar modo online/offline
 ⏰ Implementar SAF
-⏰ Generar reporte de cantidad de horas en vivo con triggers
-    ⏰ Crear coleccion de horas mensuales con estos campos
+👍 Generar reporte de cantidad de horas en vivo con triggers
+    👍 Crear coleccion de horas mensuales con estos campos
         1. id
         2. name
         3. photoUrl
