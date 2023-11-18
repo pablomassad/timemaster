@@ -30,12 +30,11 @@ const actions = {
     async initApp () {
         const setting = await fb.getDocument('settings', ENVIRONMENTS.lugar)
         set.config(setting)
-        set.path(`settings/${ENVIRONMENTS.lugar}`)
     },
     async findUserById (id) {
         ui.actions.notify('Id user: ' + id, 'info')
-        // const u = await fb.getCollectionFlex(`${state.path}/users`, { field: 'id', val: id })[0]
-        const u = await fb.getDocument(`${state.path}/users`, id)
+        // const u = await fb.getCollectionFlex(`users`, { field: 'id', val: id })[0]
+        const u = await fb.getDocument('users', id)
         set.user(u)
         return u
     },

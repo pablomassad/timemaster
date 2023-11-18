@@ -2,7 +2,7 @@ export const ENVIRONMENTS = {
     lugar: 'terranostra',
     url: 'https://drive.google.com/open?id=1HrcK1oDzKv_bVsRNjiLZqA25lPZ127EV&usp=drive_copy',
     versionCode: 1,
-    versionName: '1.00.06',
+    versionName: '1.00.07',
     productName: 'timeuser',
     packageName: 'com.pp.timeuser',
     appName: 'timeuser',
