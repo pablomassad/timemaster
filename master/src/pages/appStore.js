@@ -45,37 +45,33 @@ const actions = {
     async initApp () {
         const cfg = await fb.getDocument('settings', ENVIRONMENTS.lugar)
         set.config(cfg)
-        set.path(`settings/${ENVIRONMENTS.lugar}`)
     },
-    async getUsers () {
-        const guardias = await fb.getCollectionFlex(`${state.path}/users`, { field: 'role', val: 'GUARDIA' })
-        const maestranza = await fb.getCollectionFlex(`${state.path}/users`, { field: 'role', val: 'MAESTRANZA' })
-        const coordinador = await fb.getCollectionFlex(`${state.path}/users`, { field: 'role', val: 'COORDINADOR' })
-        const users = [...guardias, ...maestranza, ...coordinador]
-        set.users(users)
-        await actions.updateStatusUsers()
-        return users
-    },
-    async updateStatusUsers () {
-        const colRef = fb.getCollectionRef(`${state.path}/workingUsers`)
+    async monitorUsers () {
+        // const guardias = await fb.getCollectionFlex('users', { field: 'role', val: 'GUARDIA' })
+        // const maestranza = await fb.getCollectionFlex('users', { field: 'role', val: 'MAESTRANZA' })
+        // const coordinador = await fb.getCollectionFlex('users', { field: 'role', val: 'COORDINADOR' })
+        // const users = [...guardias, ...maestranza, ...coordinador]
+
+        const colRef = fb.getCollectionRef('users')
         const unsubscribe = fb.onSnapshot(colRef, (querySnapshot) => {
             const wrkUsers = []
             querySnapshot.forEach((doc) => {
-                wrkUsers.push(doc.data())
+                const worker = doc.data()
+                if (worker.role === 'GUARDIA' || worker.role === 'MAESTRANZA' || worker.role === 'COORDINADOR') {
+                    wrkUsers.push(doc.data())
+                }
             })
-            state.users.forEach(u => {
-                u.isWorking = (wrkUsers.find(x => x.uid === u.id))
-            })
+            set.users(wrkUsers)
         })
     },
     async getUserHours (uid) {
-        const col = `${state.path}/timeLogs`
+        const col = 'timeLogs'
         console.log('col:', col)
         const result = await fb.getCollectionFlex(col, { field: 'uid', val: uid, sortField: 'datetime', sortDir: 'asc' })
         return result
     },
     async getHoursByMonth (month) {
-        const col = `${state.path}/timeLogs`
+        const col = 'timeLogs'
         console.log('col:', col)
         const result = await fb.getCollectionFlex(col, { field: 'action', val: 'checkin', sortField: 'datetime', sortDir: 'asc' })
         return result
@@ -91,7 +87,7 @@ const actions = {
         const pl = { ...payload, ...param }
         pl.dtMobile = moment(pl.datetime).format('DD/MM  HH:mm:ss')
         console.log('checkIO payload:', pl)
-        await fb.setDocument(`${state.path}/timeLogs`, pl, now.toString())
+        await fb.setDocument('timeLogs', pl, now.toString())
     }
 }
 
@@ -105,17 +101,13 @@ function delGuardia (uid) {
     delete state.curGuardias[uid]
     LocalStorage.set('TN_curGuardias', state.curGuardias)
 }
-async function getWorkingUsers () {
-    const wrkUsers = await fb.getCollection(`${state.path}/workingUsers`)
-    return wrkUsers
-}
 //    async createLotesCol() {
 //    for (let index = 1; index <= 48; index++) {
 //        const lote = {
 //            id: index.toString(),
 //            unitId: index.toString()
 //        }
-//        const path = `${state.path}/lotes`
+//        const path = `lotes`
 //        await fb.setDocument(path, lote, lote.id)
 //        console.log('lote creado:', lote)
 //    }

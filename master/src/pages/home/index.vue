@@ -17,7 +17,7 @@
                 <div class="tipo">
                     <div class="porteria" v-if="appStore.state.users">
                         <div class="flexFrame">
-                            <div v-for="(usr) in appStore.state.users" :key="usr" class="avatar" @click="checkAction(usr)">
+                            <div v-for="usr in appStore.state.users" :key="usr" class="avatar" @click="checkAction(usr)">
                                 <img :src="usr.hiresUrl" class="imgAvatar" :class="{working: (usr.isWorking)}" />
                                 <div class="userStatus" :style="{'background': evalStatusColor(usr)}"></div>
                                 <div class="user">{{ usr.name }}</div>
@@ -56,7 +56,7 @@ let userInfo
 
 onMounted(async () => {
     await appStore.actions.initApp()
-    await appStore.actions.getUsers()
+    appStore.actions.monitorUsers()
 })
 const adminUsers = () => {
     refAdmin.value.show()
