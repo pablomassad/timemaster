@@ -1,40 +1,42 @@
 <template>
     <div class="backIntegralmente">
-        <div v-if="!showScanner" class="timeFrame">
-            <div class="logoFrame">
-                <img src="images/tn.png" class="logo" :class="{masterClass: !!mastermode}" @click="adminUsers">
-                <div class="btnScan" @click="scanQR">
-                    <img src="images/scan.png" class="qr" />
+        <div class="mainFrame">
+            <div v-if="!showScanner" class="timeFrame">
+                <div class="logoFrame">
+                    <img src="images/tn.png" class="logo" :class="{masterClass: !!mastermode}" @click="adminUsers">
+                    <div class="btnScan" @click="scanQR">
+                        <img src="images/scan.png" class="qr" />
+                    </div>
+                    <div class="time">
+                        {{ currentTime.toLocaleDateString('es-ES') }}
+                    </div>
+                    <div class="time">
+                        {{ currentTime.toLocaleTimeString('en-GB') }}
+                    </div>
                 </div>
-                <div class="time">
-                    {{ currentTime.toLocaleDateString('es-ES') }}
-                </div>
-                <div class="time">
-                    {{ currentTime.toLocaleTimeString('en-GB') }}
-                </div>
-            </div>
-            <div class="personalFrame">
-                <div class="tipo">
-                    <div class="porteria" v-if="appStore.state.users">
-                        <div class="flexFrame">
-                            <div v-for="usr in appStore.state.users" :key="usr" class="avatar" @click="checkAction(usr)">
-                                <img :src="usr.hiresUrl" class="imgAvatar" :class="{working: (usr.isWorking)}" />
-                                <div class="userStatus" :style="{'background': evalStatusColor(usr)}"></div>
-                                <div class="user">{{ usr.name }}</div>
+                <div class="personalFrame">
+                    <div class="tipo">
+                        <div class="porteria" v-if="appStore.state.users">
+                            <div class="flexFrame">
+                                <div v-for="usr in appStore.state.users" :key="usr" class="avatar" @click="checkAction(usr)">
+                                    <img :src="usr.hiresUrl" class="imgAvatar" :class="{working: (usr.isWorking)}" />
+                                    <div class="userStatus" :style="{'background': evalStatusColor(usr)}"></div>
+                                    <div class="user">{{ usr.name }}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div v-if="showScanner">
-            <q-icon name="arrow_back" class="back" @click="cancelQR"></q-icon>
-            <qrcode-stream @detect="onDecode"></qrcode-stream>
-        </div>
+            <div v-if="showScanner">
+                <q-icon name="arrow_back" class="back" @click="cancelQR"></q-icon>
+                <qrcode-stream @detect="onDecode"></qrcode-stream>
+            </div>
 
-        <CheckIO ref="refCheckIO" />
-        <Admin ref="refAdmin" />
-        <div class="master" v-touch-hold.mouse="toggleMaster"></div>
+            <CheckIO ref="refCheckIO" />
+            <Admin ref="refAdmin" />
+            <div class="master" v-touch-hold.mouse="toggleMaster"></div>
+        </div>
     </div>
 </template>
 
