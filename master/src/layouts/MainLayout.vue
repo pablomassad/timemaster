@@ -2,7 +2,7 @@
     <Layout isRoot>
         <template #drawer>
             <q-separator />
-            <div class="menuRow" @click="searchUpdates()">
+            <div class="menuRow" @click="appStore.actions.searchUpdates()">
                 <q-icon name="update" class="iconMenu" />
                 <div class="rowText">Buscar actualización</div>
             </div>
@@ -26,7 +26,6 @@ import Layout from './fwk-q-layout/index.vue'
 import appStore from 'src/pages/appStore'
 import ConfirmDialog from 'fwk-q-confirmdialog'
 import { ENVIRONMENTS } from 'src/environments'
-import { LocalStorage } from 'quasar'
 import { ui } from 'fwk-q-ui'
 import { main } from 'fwk-q-main'
 
@@ -35,18 +34,6 @@ const dialogMessage = ref('')
 const onAcceptDialog = ref()
 const onCancelDialog = ref()
 
-const searchUpdates = () => {
-    if (ENVIRONMENTS.versionName < appStore.state.config.version_timemaster || !main.state.isMobile) {
-        prompt.value = true
-        dialogMessage.value = 'Hay una nueva version de la aplicación, desea instalarla?'
-        onAcceptDialog.value = async () => {
-            window.open(appStore.state.config.url_timemaster, '_system')
-        }
-        onCancelDialog.value = () => {
-            prompt.value = false
-        }
-    } else { ui.actions.notify('No hay nuevas actualizaciones!', 'info', { position: 'center' }) }
-}
 const logout = () => {
     alert('No disponible')
 }

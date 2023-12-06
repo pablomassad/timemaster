@@ -1,17 +1,29 @@
 <template>
     <div>
         <div class="title">Listador de horas x empleado</div>
-        <q-select :options="appStore.state.users" behavior="menu" label="Seleccione usuario" v-model="selUser" option-label="name" option-value="id" @update:model-value="onSelUser" class="combo" outlined></q-select>
-        <div v-if="timeLogs.length > 0">
-            <div class="rowLog" style="background-color: yellow;">
-                <div class="header">id</div>
-                <div class="header">Fecha/Hora</div>
-                <div class="header">Acción</div>
+        <div class="grdCombos">
+            <q-select :options="appStore.state.years" behavior="menu" label="Seleccione año" v-model="selYear" option-label="name" option-value="id" @update:model-value="onSelYear" class="combo" outlined></q-select>
+            <q-select :options="appStore.state.months" behavior="menu" label="Seleccione mes" v-model="selMonth" option-label="name" option-value="id" @update:model-value="onSelMonth" class="combo" outlined></q-select>
+        </div>
+
+        <div v-if="days.length > 0" style="margin:10px">
+            <div class="rowLog" style="background-color: rgb(173, 173, 173);">
+                <div class="header"></div>
+                <div v-for="usr in appStore.state.users" :key="usr">
+                    <div class="header">Turnos: {{ turns[usr.uid] }}</div>
+                </div>
             </div>
-            <div v-for="log in timeLogs" :key="log" class="rowLog">
-                <div class="info">{{ log.id }}</div>
-                <div class="info">{{ moment(log.datetime).format('DD/MM/YY HH:mm') }}</div>
-                <div class="info">{{ log.action }}</div>
+            <div class="rowLog" style="background-color: rgb(173, 173, 173);">
+                <div class="header">Fecha</div>
+                <div v-for="usr in appStore.state.users" :key="usr">
+                    <div class="header">{{ usr.name }}</div>
+                </div>
+            </div>
+            <div v-for="day in days" :key="day" class="rowLog">
+                <div class="info">{{ day }}</div>
+                <div v-for="usr in appStore.state.users" :key="usr">
+                    <div class="info" :style="{background: evalBgColor(evalTurno(day, usr.uid))}">{{ evalTurno(day, usr.uid) }}</div>
+                </div>
             </div>
         </div>
     </div>
@@ -24,22 +36,89 @@ import moment from 'moment'
 
 console.log('Hours CONSTRUCTOR............')
 
-const selUser = ref()
-const timeLogs = ref([])
+const selYear = ref()
+const selMonth = ref()
+const days = ref([])
+const timeLog = ref([])
+const turns = ref({})
 
 onMounted(() => {
     console.log('onMounted Hours')
 })
 
-const onSelUser = async (e) => {
-    console.log(e.id)
-    selUser.value = e
-    timeLogs.value = await appStore.actions.getUserHours(e.id)
-    console.log(timeLogs.value)
+const onSelYear = async (e) => {
+    console.log('selYear:', e.id)
+    selYear.value = e
 }
+const onSelMonth = async (e) => {
+    console.log('selMonth:', e.id)
+    selMonth.value = e
+    timeLog.value = await appStore.actions.getHoursByMonth(selYear.value.id, selMonth.value.id)
+    console.log(timeLog.value)
+    processDates(timeLog.value)
+}
+
+const processDates = (arr) => {
+    const uniqueDays = {}
+    arr.forEach(obj => {
+        const d = moment(obj.datetime).format('DD').toString()
+        if (!uniqueDays[d]) {
+            uniqueDays[d] = true
+        }
+    })
+    days.value = Object.keys(uniqueDays)
+
+    for (const d of days.value) {
+        for (const usr of appStore.state.users) {
+            if (evalTurno(d, usr.uid)) {
+                if (!turns.value[usr.uid]) { turns.value[usr.uid] = 0 }
+                turns.value[usr.uid] = turns.value[usr.uid] + 1
+            }
+        }
+    }
+    console.log('turns:', turns.value)
+}
+
+const evalTurno = (d, uid) => {
+    let res
+    const fnd = timeLog.value.find(x => (getDay(x.datetime) === d) && (x.uid === uid))
+    if (fnd) {
+        const hora = new Date(fnd.datetime).toTimeString().split(' ')[0].split(':')[0]
+        res = hora < 7 ? 'mañana' : hora < 15 ? 'tarde' : 'noche'
+    }
+    return res
+}
+const getDay = (dt) => {
+    const day = moment(dt).format('DD').toString()
+    return day
+}
+const evalBgColor = (turno) => {
+    let bg = '#ececec'
+    switch (turno) {
+        case 'mañana':
+            bg = '#ffffa6'
+            break
+        case 'tarde':
+            bg = '#f7b98a'
+            break
+        case 'noche':
+            bg = '#c4d0ff'
+            break
+
+        default:
+            break
+    }
+    return bg
+}
+
 </script>
 
 <style scoped lang="scss">
+.grdCombos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
 .title {
     font-size: 20px;
     font-weight: bold;
@@ -53,20 +132,21 @@ const onSelUser = async (e) => {
 
 .rowLog {
     display: grid;
-    grid-template-columns: 200px 1fr 1fr;
+    grid-template-columns: 40px 1fr 1fr 1fr 1fr 1fr;
     align-items: center;
-    width: 400px;
-    border: 1px solid gray;
-    margin: auto;
-    justify-items: center;
+    text-align: center;
 }
 
 .header {
     font-size: 15px;
     font-weight: bold;
+    border: 1px solid gray;
 }
 
 .info {
     font-size: 14px;
+    border: 1px solid gray;
+    height: 25px;
+    background-color: #bcbcbc;
 }
 </style>

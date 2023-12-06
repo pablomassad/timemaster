@@ -4,13 +4,28 @@ import fb from 'fwk-q-firebase'
 import { LocalStorage } from 'quasar'
 import { ENVIRONMENTS } from 'src/environments'
 import moment from 'moment'
+// import { KillApps } from 'fwk-kill-apps'
 
 fb.initFirebase(ENVIRONMENTS.firebase)
+
+// setTimeout(() => {
+//    KillApps.selfDestruction()
+// }, 3600000)
 
 const state = reactive({
     path: undefined,
     config: undefined,
     users: LocalStorage.getItem('TN_users'),
+    years: [
+        { id: 2023, name: 2023 },
+        { id: 2024, name: 2024 },
+        { id: 2025, name: 2025 },
+        { id: 2026, name: 2026 },
+        { id: 2027, name: 2027 },
+        { id: 2028, name: 2028 },
+        { id: 2029, name: 2029 },
+        { id: 2030, name: 2030 }
+    ],
     months: [
         { id: 1, name: 'enero' },
         { id: 2, name: 'febrero' },
@@ -57,7 +72,7 @@ const actions = {
             const wrkUsers = []
             querySnapshot.forEach((doc) => {
                 const worker = doc.data()
-                if (worker.role === 'GUARDIA' || worker.role === 'MAESTRANZA' || worker.role === 'COORDINADOR') {
+                if ((worker.role === 'GUARDIA' || worker.role === 'MAESTRANZA' || worker.role === 'COORDINADOR') && (worker.uid !== '6FFY4ls2TYhJfzoyhX0U8QdaJ2X2')) {
                     wrkUsers.push(doc.data())
                 }
             })
@@ -70,10 +85,36 @@ const actions = {
         const result = await fb.getCollectionFlex(col, { field: 'uid', val: uid, sortField: 'datetime', sortDir: 'asc' })
         return result
     },
-    async getHoursByMonth (month) {
+    async getHoursByMonth (year, month) {
+        console.log('year:', year)
+        console.log('month:', month)
         const col = 'timeLogs'
         console.log('col:', col)
-        const result = await fb.getCollectionFlex(col, { field: 'action', val: 'checkin', sortField: 'datetime', sortDir: 'asc' })
+
+        const strStart = `${year}-${month}-01`
+        console.log('strStart:', strStart)
+        const startDate = moment(strStart, 'YYYY-MM-DD').unix() * 1000
+        if (month === 12) {
+            year = year + 1
+            month = 0
+        }
+        const strEnd = `${year}-${month + 1}-01`
+        console.log('strEnd:', strEnd)
+        const endDate = moment(strEnd, 'YYYY-MM-DD').unix() * 1000
+
+        const criterios = [
+            { field: 'action', op: '==', val: 'checkin' },
+            { field: 'datetime', op: '>', val: startDate },
+            { field: 'datetime', op: '<', val: endDate }
+        ]
+        const result = await fb.getCollectionQuery(col, criterios, { sortField: 'datetime', sortDir: 'asc' })
+        return result
+    },
+    async getSummaryByUser (month, uid) {
+        console.log('month:', month)
+        console.log('user:', uid)
+        const col = 'users'
+        const result = await fb.getDocument(`${col}/${uid}/workingHours`, `2023${month}`)
         return result
     },
     async checkIO (param) {
