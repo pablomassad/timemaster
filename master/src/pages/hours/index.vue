@@ -7,13 +7,13 @@
         </div>
 
         <div v-if="days.length > 0" style="margin:10px">
-            <div class="rowLog" style="background-color: rgb(173, 173, 173);">
+            <div class="rowLog references">
                 <div class="header"></div>
                 <div v-for="usr in appStore.state.users" :key="usr">
                     <div class="header">Turnos: {{ turns[usr.uid] }}</div>
                 </div>
             </div>
-            <div class="rowLog" style="background-color: rgb(173, 173, 173);">
+            <div class="rowLog references">
                 <div class="header">Fecha</div>
                 <div v-for="usr in appStore.state.users" :key="usr">
                     <div class="header">{{ usr.name }}</div>
@@ -67,6 +67,7 @@ const processDates = (arr) => {
         }
     })
     days.value = Object.keys(uniqueDays)
+    appStore.actions.sortArray(days.value, null, 1)
 
     for (const d of days.value) {
         for (const usr of appStore.state.users) {
@@ -93,7 +94,7 @@ const getDay = (dt) => {
     return day
 }
 const evalBgColor = (turno) => {
-    let bg = '#ececec'
+    let bg = '#aaa'
     switch (turno) {
         case 'mañana':
             bg = '#ffffa6'
@@ -117,6 +118,10 @@ const evalBgColor = (turno) => {
 .grdCombos {
     display: grid;
     grid-template-columns: 1fr 1fr;
+}
+
+.references {
+    background: #f2f2f2;
 }
 
 .title {
@@ -147,6 +152,6 @@ const evalBgColor = (turno) => {
     font-size: 14px;
     border: 1px solid gray;
     height: 25px;
-    background-color: #bcbcbc;
+    background-color: #f2f2f2;
 }
 </style>

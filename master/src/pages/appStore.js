@@ -88,8 +88,6 @@ const actions = {
     async getHoursByMonth (year, month) {
         console.log('year:', year)
         console.log('month:', month)
-        const col = 'timeLogs'
-        console.log('col:', col)
 
         const strStart = `${year}-${month}-01`
         console.log('strStart:', strStart)
@@ -107,6 +105,7 @@ const actions = {
             { field: 'datetime', op: '>', val: startDate },
             { field: 'datetime', op: '<', val: endDate }
         ]
+        const col = 'timeLogs'
         const result = await fb.getCollectionQuery(col, criterios, { sortField: 'datetime', sortDir: 'asc' })
         return result
     },
@@ -129,6 +128,19 @@ const actions = {
         pl.dtMobile = moment(pl.datetime).format('DD/MM  HH:mm:ss')
         console.log('checkIO payload:', pl)
         await fb.setDocument('timeLogs', pl, now.toString())
+    },
+    sortArray (arr, key, dir) {
+        const res = arr.sort((a, b) => {
+            if (key !== null) {
+                if (a[key] > b[key]) return 1 * dir
+                if (a[key] < b[key]) return -1 * dir
+            } else {
+                if (a > b) return 1 * dir
+                if (a < b) return -1 * dir
+            }
+            return 0
+        })
+        return res
     }
 }
 
