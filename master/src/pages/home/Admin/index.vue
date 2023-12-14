@@ -45,9 +45,6 @@ const onAcceptDialog = ref()
 const onCancelDialog = ref()
 
 onMounted(async () => {
-    setTimeout(() => {
-        searchUpdates()
-    }, 5000)
 })
 const show = () => {
     showAdmin.value = true
