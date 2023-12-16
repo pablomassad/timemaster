@@ -1,16 +1,17 @@
 import { reactive, readonly } from 'vue'
+import { Network } from '@capacitor/network'
 import { ui } from 'fwk-q-ui'
 import fb from 'fwk-q-firebase'
 import { LocalStorage } from 'quasar'
 import { ENVIRONMENTS } from 'src/environments'
 import moment from 'moment'
-// import { KillApps } from 'fwk-kill-apps'
+import evtEmitter from 'fwk-events'
+
+const initSAF = localStorage.safList ?? '[]'
+const safList = JSON.parse(initSAF)
+let processingSAFFlag = false
 
 fb.initFirebase(ENVIRONMENTS.firebase)
-
-// setTimeout(() => {
-//    KillApps.selfDestruction()
-// }, 3600000)
 
 const state = reactive({
     path: undefined,
@@ -60,6 +61,14 @@ const actions = {
     async initApp () {
         const cfg = await fb.getDocument('settings', ENVIRONMENTS.lugar)
         set.config(cfg)
+        Network.addListener('networkStatusChange', async (netSt) => {
+            console.log('Network status changed: ' + netSt)
+            await evalSAF()
+        })
+        if (safList.length > 0) {
+            console.log('fwk-api => init fwkApi validation SAF', safList.length)
+            if (await evalSAF()) evtEmitter.emit('onNewPendingTask', safList.length)
+        }
     },
     async monitorUsers () {
         // const guardias = await fb.getCollectionFlex('users', { field: 'role', val: 'GUARDIA' })
@@ -127,7 +136,10 @@ const actions = {
         const pl = { ...payload, ...param }
         pl.dtMobile = moment(pl.datetime).format('DD/MM  HH:mm:ss')
         console.log('checkIO payload:', pl)
-        await fb.setDocument('timeLogs', pl, now.toString())
+        fnd.isWorking = (pl.action === 'checkin')
+        if (await isOnline()) {
+            await fb.setDocument('timeLogs', pl, now.toString())
+        }
     },
     sortArray (arr, key, dir) {
         const res = arr.sort((a, b) => {
@@ -149,11 +161,45 @@ export default {
     state: readonly(state),
     actions
 }
-function delGuardia (uid) {
-    console.log('delGuardia:', uid)
-    delete state.curGuardias[uid]
-    LocalStorage.set('TN_curGuardias', state.curGuardias)
+
+const isOnline = async () => {
+    const netRes = await Network.getStatus() // 'wifi' | 'cellular' | 'none' | 'unknown'
+    const status = netRes.connectionType
+    const isOnline = (status === 'wifi' || status === 'cellular' || !status)
+    return isOnline
 }
+const evalSAF = async () => {
+    const isOnlineFlag = await isOnline()
+    if ((isOnlineFlag) && (safList.length > 0) && (!processingSAFFlag)) {
+        processSAF()
+        return true
+    } else return false
+}
+const processSAF = async () => {
+    processingSAFFlag = true
+    console.log('fwk-api => safList:' + JSON.stringify(safList))
+    console.time('processSAF')
+    while (safList.length > 0) {
+        try {
+            const { method, path, params } = safList[0]
+            // await api.callSrv(method, path, params)
+            safList.shift()
+            localStorage.safList = JSON.stringify(safList)
+        } catch (error) {
+            console.log('error proccesing saf:', error)
+        }
+    }
+    console.timeEnd('processSAF')
+    evtEmitter.emit('onSAFCompleted')
+    evtEmitter.emit('onNewPendingTask', safList.length)
+    processingSAFFlag = false
+}
+function queueSAF (pl) {
+    safList.push(pl)
+    localStorage.safList = JSON.stringify(safList)
+    evtEmitter.emit('onNewPendingTask', safList.length)
+}
+
 //    async createLotesCol() {
 //    for (let index = 1; index <= 48; index++) {
 //        const lote = {

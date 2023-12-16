@@ -139,7 +139,8 @@ const acceptCheckIO = () => {
                 action: acc
             }
             if (isManual.value) {
-                const dt = moment(`${fechaManual.value} ${horaManual.value}`, 'HH-MM-YYYY HH:mm') // parse(`${fechaManual.value} ${horaManual.value}`, 'dd-MM-yyyy HH:mm', new Date())
+                const strDatetime = `${fechaManual.value} ${horaManual.value}`
+                const dt = moment(strDatetime, 'DD-MM-YYYY HH:mm')
                 pl.datetime = dt.unix() * 1000 // formatISO(dt)
                 pl.comment = comentario.value
             }
