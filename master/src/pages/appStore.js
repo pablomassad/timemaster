@@ -139,6 +139,13 @@ const actions = {
         fnd.isWorking = (pl.action === 'checkin')
         if (await isOnline()) {
             await fb.setDocument('timeLogs', pl, now.toString())
+        } else {
+            const o = {
+                col: 'timeLogs',
+                timestamp: now.toString(),
+                pl
+            }
+            queueSAF(o)
         }
     },
     sortArray (arr, key, dir) {
@@ -181,8 +188,8 @@ const processSAF = async () => {
     console.time('processSAF')
     while (safList.length > 0) {
         try {
-            const { method, path, params } = safList[0]
-            // await api.callSrv(method, path, params)
+            const o = safList[0]
+            await fb.setDocument(o.col, o.pl, o.timestamp)
             safList.shift()
             localStorage.safList = JSON.stringify(safList)
         } catch (error) {
