@@ -36,6 +36,7 @@
             <CheckIO ref="refCheckIO" />
             <Admin ref="refAdmin" />
             <div class="master" v-touch-hold.mouse="toggleMaster"></div>
+            <div class="offline" v-if="!appStore.state.isOnlineFlag">Aplicacion sin internet ({{ counter }})</div>
         </div>
     </div>
 </template>
@@ -48,7 +49,9 @@ import { QrcodeStream } from 'vue-qrcode-reader'
 import { ui } from 'fwk-q-ui'
 import Admin from './Admin/index.vue'
 import CheckIO from './CheckIO/index.vue'
+import evtEmitter from 'fwk-events'
 
+const counter = ref(0)
 const refAdmin = ref()
 const refCheckIO = ref()
 const mastermode = ref(false)
@@ -59,6 +62,10 @@ let userInfo
 onMounted(async () => {
     await appStore.actions.initApp()
     appStore.actions.monitorUsers()
+    evtEmitter.on('onNewPendingTask', (c) => {
+        console.log('onNewPendingTask:', c)
+        counter.value = c
+    })
 })
 const adminUsers = () => {
     refAdmin.value.show()
@@ -113,6 +120,20 @@ watch(() => appStore.state.users, (newUsers) => {
     left: 0;
     width: 40px;
     height: 40px;
+}
+
+.offline {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    text-align: center;
+    background-color: red;
+    color: white;
+    font-size: 18px;
+    text-shadow: 1px 1px 1px black;
+    box-shadow: 0 5px 10px #333;
 }
 
 .masterClass {

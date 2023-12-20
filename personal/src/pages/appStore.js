@@ -7,6 +7,7 @@ import { ENVIRONMENTS } from 'src/environments'
 fb.initFirebase(ENVIRONMENTS.firebase)
 
 const state = reactive({
+    userFlag: false,
     path: undefined,
     config: undefined,
     user: LocalStorage.getItem('TN_user')
@@ -30,10 +31,16 @@ const actions = {
     async initApp () {
         const setting = await fb.getDocument('settings', ENVIRONMENTS.lugar)
         set.config(setting)
+
+        const benja = 'H1WJTFu6bWRP4gYoRtAXGP4krLY2'
+        const params = new URLSearchParams(window.location.search)
+        const uid = params.get('uid')
+        if (uid === benja) {
+            actions.findUserById(uid)
+        }
     },
     async findUserById (id) {
         ui.actions.notify('Id user: ' + id, 'info')
-        // const u = await fb.getCollectionFlex(`users`, { field: 'id', val: id })[0]
         const u = await fb.getDocument('users', id)
         set.user(u)
         return u

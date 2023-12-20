@@ -7,13 +7,14 @@ import { ENVIRONMENTS } from 'src/environments'
 import moment from 'moment'
 import evtEmitter from 'fwk-events'
 
-const initSAF = localStorage.safList ?? '[]'
+const initSAF = LocalStorage.getItem('TN_SAF') ?? '[]'
 const safList = JSON.parse(initSAF)
 let processingSAFFlag = false
 
 fb.initFirebase(ENVIRONMENTS.firebase)
 
 const state = reactive({
+    isOnlineFlag: true,
     path: undefined,
     config: undefined,
     users: LocalStorage.getItem('TN_users'),
@@ -43,6 +44,10 @@ const state = reactive({
     ]
 })
 const set = {
+    isOnlineFlag (flag) {
+        console.log('store set.isOnlineFlag:', flag)
+        state.isOnlineFlag = flag
+    },
     users (o) {
         console.log('store set.users:', o)
         state.users = o
@@ -63,6 +68,7 @@ const actions = {
         set.config(cfg)
         Network.addListener('networkStatusChange', async (netSt) => {
             console.log('Network status changed: ' + netSt)
+            set.isOnlineFlag(await isOnline())
             await evalSAF()
         })
         if (safList.length > 0) {
@@ -191,7 +197,7 @@ const processSAF = async () => {
             const o = safList[0]
             await fb.setDocument(o.col, o.pl, o.timestamp)
             safList.shift()
-            localStorage.safList = JSON.stringify(safList)
+            LocalStorage.set('TN_SAF', JSON.stringify(safList))
         } catch (error) {
             console.log('error proccesing saf:', error)
         }
@@ -203,7 +209,7 @@ const processSAF = async () => {
 }
 function queueSAF (pl) {
     safList.push(pl)
-    localStorage.safList = JSON.stringify(safList)
+    LocalStorage.set('TN_SAF', JSON.stringify(safList))
     evtEmitter.emit('onNewPendingTask', safList.length)
 }
 

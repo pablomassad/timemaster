@@ -12,7 +12,7 @@
                 <qrcode-vue ref="qrRef" :value="QRValue" class="picQR" />
             </div>
         </div>
-        <div v-if="!appStore.state.user">
+        <div v-if="!appStore.state.user && !appStore.state.userFlag">
             <qrcode-stream @detect="onDecode"></qrcode-stream>
         </div>
     </div>
@@ -26,7 +26,6 @@ import appStore from 'src/pages/appStore'
 
 const QRValue = ref()
 const showQR = ref(false)
-const showScanner = ref(false)
 
 onMounted(async () => {
     await appStore.actions.initApp()
