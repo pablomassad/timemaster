@@ -39,15 +39,12 @@ const colores = [
 ]
 const selYear = ref()
 const selMonth = ref()
+const timeLog = ref([])
 const processedData = ref([])
 
 onMounted(() => {
-    console.log('onMounted Hours')
+    console.log('onMounted Report')
 })
-const evalBgColor = (u) => {
-    const idx = appStore.state.users.findIndex(x => x.name === u)
-    return colores[idx]
-}
 const onSelYear = async (e) => {
     console.log('selYear:', e.id)
     selYear.value = e
@@ -55,17 +52,26 @@ const onSelYear = async (e) => {
 const onSelMonth = async (e) => {
     console.log('selMonth:', e.id)
     selMonth.value = e
-    const arr = await appStore.actions.getHoursByMonth(selYear.value.id, selMonth.value.id)
-    console.log(arr)
-    processData(arr)
+    timeLog.value = await appStore.actions.getHoursByMonth(selYear.value.id, selMonth.value.id)
+    console.log(timeLog.value)
+    processDates()
 }
+const processDates = () => {
+    // const uniqueDays = {}
+    // timeLog.value.forEach(obj => {
+    //    const d = moment(obj.datetime).format('DD').toString()
+    //    if (!uniqueDays[d]) {
+    //        uniqueDays[d] = true
+    //    }
+    // })
+    // days.value = Object.keys(uniqueDays)
+    // appStore.actions.sortArray(days.value, null, 1)
 
-const processData = (arr) => {
     const data = {}
-    arr.forEach(obj => {
+    timeLog.value.forEach(obj => {
         const fecha = moment(obj.datetime).format('DD').toString() // d.toISOString().split('T')[0]
         const hora = new Date(obj.datetime).toTimeString().split(' ')[0].split(':')[0]
-        const turno = hora < 6 ? 'mañana' : hora < 14 ? 'tarde' : 'noche'
+        const turno = hora < 7 ? 'mañana' : hora < 15 ? 'tarde' : 'noche'
 
         if (!data[fecha]) {
             data[fecha] = { fecha, turnos: {} }
@@ -73,7 +79,12 @@ const processData = (arr) => {
         data[fecha].turnos[turno] = obj.name
     })
     console.log('processedData:', Object.values(data))
-    processedData.value = Object.values(data)
+    const arr = Object.values(data)
+    processedData.value = appStore.actions.sortArray(arr, 'fecha', 1)
+}
+const evalBgColor = (u) => {
+    const idx = appStore.state.users.findIndex(x => x.name === u)
+    return colores[idx]
 }
 </script>
 
@@ -85,15 +96,6 @@ const processData = (arr) => {
     margin: 20px;
 }
 
-.grdTotals {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    font-size: 20px;
-    justify-items: center;
-    margin: auto;
-    margin-bottom: 20px;
-}
-
 .grdCombos {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -103,22 +105,13 @@ const processData = (arr) => {
     margin: 16px;
 }
 
-.rowLog {
-    display: grid;
-    grid-template-columns: 1fr 200px;
-    align-items: center;
-    border: 1px solid gray;
-    margin: 0 16px;
-    justify-items: center;
-}
-
 .rowMatrix {
     display: grid;
     grid-template-columns: 40px 1fr 1fr 1fr;
     align-items: center;
+    text-align: center;
     border: 1px solid gray;
     margin: 0 16px;
-    text-align: center;
     background-color: #777;
     min-width: 480px;
 }
@@ -129,7 +122,12 @@ const processData = (arr) => {
     background-color: #c2c2c2;
 }
 
-.info {
-    font-size: 14px;
+.grdTotals {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    font-size: 20px;
+    justify-items: center;
+    margin: auto;
+    margin-bottom: 20px;
 }
 </style>
